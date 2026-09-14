@@ -46,6 +46,7 @@ fi
 UNIT_DIR="$ROOT/etc/systemd/system"
 BIN_DIR="$ROOT/usr/local/sbin"
 CONFIG_PATH="$ROOT/etc/autowake.conf"
+WAKE_HOOK_DIR="$ROOT/etc/autowake/wake.d"
 
 if [ -z "$ROOT" ] && [ -e "$UNIT_DIR/autowake.timer" ]; then
     if ! systemctl disable --now autowake.timer; then
@@ -64,6 +65,14 @@ if $KEEP_CONFIG; then
     printf 'Configuration preserved: %s\n' "$CONFIG_PATH"
 else
     rm -f -- "$CONFIG_PATH"
+fi
+
+if [ -d "$WAKE_HOOK_DIR" ]; then
+    if rmdir "$WAKE_HOOK_DIR" 2>/dev/null; then
+        rmdir "$ROOT/etc/autowake" 2>/dev/null || true
+    else
+        printf 'Wake hooks preserved: %s\n' "$WAKE_HOOK_DIR"
+    fi
 fi
 
 if [ -z "$ROOT" ]; then

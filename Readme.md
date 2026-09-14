@@ -6,6 +6,12 @@ AutoWake is a lightweight POSIX shell utility that uses a systemd timer to
 suspend a physical Ubuntu/Debian server and a hardware real-time clock (RTC)
 alarm to resume it.
 
+## Why I created AutoWake
+
+I created AutoWake because I was too lazy to manually start and suspend my
+server every week. It automates the routine: the server goes to sleep when I no
+longer need it and wakes up before I need it again.
+
 ## Status
 
 AutoWake is complete and ready for installation. The timer is intentionally
@@ -24,6 +30,10 @@ the target server before activation.
 AutoWake calculates calendar dates in local time, so the elapsed weekend can be
 58, 59, or 60 hours when the timezone offset changes.
 
+The editable [architecture diagram](docs/autowake-architecture.drawio) shows
+the installation, diagnostic, scheduled suspend, and hardware wake flows. Open
+it with [draw.io](https://app.diagrams.net/) or the diagrams.net desktop app.
+
 ## Requirements
 
 - A physical Ubuntu/Debian server running systemd.
@@ -36,11 +46,32 @@ it cannot turn on a machine that has lost or disconnected power.
 
 ## Install
 
-Review the default configuration, then install from the repository root:
+For a fresh installation, run:
 
 ```sh
-cat autowake.conf
+git clone https://github.com/apache261/Autowake.git
+cd Autowake
 sudo ./install.sh
+```
+
+If the repository is already downloaded, open its directory and run only:
+
+```sh
+sudo ./install.sh
+```
+
+The installer does not activate the schedule. Verify the installation with:
+
+```sh
+sudo /usr/local/sbin/autowake check
+/usr/local/sbin/autowake preview
+```
+
+After completing a hardware wake test, enable the weekly timer:
+
+```sh
+sudo systemctl enable --now autowake.timer
+systemctl list-timers autowake.timer
 ```
 
 The installer places:
@@ -52,16 +83,8 @@ The installer places:
   `/etc/systemd/system/autowake.timer`
 
 An existing configuration is preserved. The installer regenerates the timer
-from that configuration and reloads systemd. It does not enable or start the
-timer, so a new installation cannot immediately suspend the server.
-
-For an isolated package-style installation test, use an absolute staging path:
-
-```sh
-./install.sh --root /tmp/autowake-stage
-```
-
-This mode writes only below the staging path and does not call systemctl.
+from that configuration and reloads systemd. It never enables or starts the
+timer automatically.
 
 ## Commands
 
@@ -80,6 +103,40 @@ sudo /usr/local/sbin/autowake run
 
 Do not invoke `run` on a production server merely as a diagnostic: when called
 inside its execution window it will suspend the machine.
+
+## Run custom scripts after wake
+
+After a successful resume, AutoWake runs every executable regular file in
+`/etc/autowake/wake.d` in filename order. This can be used for service health
+checks, notifications, storage checks, or other site-specific recovery work.
+
+Wake hooks run as root. Install them as root-owned files and do not make them
+writable by untrusted users:
+
+```sh
+sudo install -o root -g root -m 0755 my-wake-check.sh \
+    /etc/autowake/wake.d/20-my-wake-check
+```
+
+Non-executable files are ignored. If a hook fails, AutoWake records the failure
+in the journal, continues running the remaining hooks, and marks the service
+run as failed after all hooks finish. Hooks run only after suspends initiated by
+AutoWake; they do not run after a reboot or an unrelated manual suspend.
+
+An example hook checks for `llama-server` and starts it with `nohup` when it is
+not running:
+
+```sh
+sudo install -o root -g root -m 0755 \
+    examples/wake.d/10-ensure-llama-server \
+    /etc/autowake/wake.d/10-ensure-llama-server
+```
+
+The example uses absolute paths below `/home/nisadmin/llama.cpp` and runs the
+process as `nisadmin`. Edit `LLAMA_SERVER`, `MODEL`, and `RUN_AS_USER` if your
+installation differs. A dedicated systemd service is still recommended if the
+program must also recover after a reboot or power interruption, because wake
+hooks run only after an AutoWake suspend.
 
 ## Configure
 
@@ -163,6 +220,9 @@ To preserve `/etc/autowake.conf` for a later reinstall:
 sudo /usr/local/sbin/autowake-uninstall --keep-config
 ```
 
+Custom wake hooks are preserved during removal. The uninstaller removes the
+hook directory only when it is empty.
+
 The uninstaller can also operate on an isolated staged installation without
 contacting the host's systemd instance:
 
@@ -178,6 +238,14 @@ Run the complete automated suite with:
 make test
 ```
 
+To test installation without writing to system directories or contacting the
+host's systemd instance:
+
+```sh
+./install.sh --root /tmp/autowake-stage
+./uninstall.sh --root /tmp/autowake-stage
+```
+
 It checks POSIX shell syntax, validates generated systemd units when
 `systemd-analyze` is available, exercises calendar and daylight-saving
 boundaries using fixed timestamps, and uses mocked power commands to verify
@@ -186,3 +254,5 @@ ordering and failures. It does not perform hardware validation.
 RTC capabilities vary; consult the
 [rtcwake manual](https://www.man7.org/linux/man-pages/man8/rtcwake.8.html) when
 validating the target server.
+
+For common operational questions, see the [FAQ](FAQ.md).

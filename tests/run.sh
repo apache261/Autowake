@@ -51,7 +51,7 @@ run_preview_test()
     fi
 }
 
-printf '1..18\n'
+printf '1..21\n'
 
 run_preview_test 'week and year boundary' UTC '2026-12-31 12:00' \
     '2027-01-01 19:00:00 UTC' '2027-01-04 06:00:00 UTC'
@@ -152,6 +152,56 @@ else
     fail 'suspend command failure is propagated'
 fi
 
+success_hooks="$TEST_TMP/hooks-success"
+mkdir "$success_hooks"
+cat > "$success_hooks/10-first" <<'EOF'
+#!/bin/sh
+printf '%s\n' 'hook first' >> "$AUTOWAKE_TEST_LOG"
+EOF
+cat > "$success_hooks/20-second" <<'EOF'
+#!/bin/sh
+printf '%s\n' 'hook second' >> "$AUTOWAKE_TEST_LOG"
+EOF
+printf '%s\n' 'not executable' > "$success_hooks/15-ignore"
+chmod +x "$success_hooks/10-first" "$success_hooks/20-second"
+: > "$log"
+if TZ=UTC PATH="$MOCK_PATH" AUTOWAKE_CONFIG="$config" AUTOWAKE_NOW_EPOCH="$scheduled" \
+    AUTOWAKE_TEST_LOG="$log" AUTOWAKE_WAKE_HOOK_DIR="$success_hooks" \
+    "$PROJECT_DIR/autowake.sh" run >/dev/null 2>&1 &&
+    [ "$(sed -n '1p' "$log")" = "rtcwake -m no -d /dev/rtc0 -t $expected_wake" ] &&
+    [ "$(sed -n '2p' "$log")" = 'systemctl suspend' ] &&
+    [ "$(sed -n '3p' "$log")" = 'hook first' ] &&
+    [ "$(sed -n '4p' "$log")" = 'hook second' ] &&
+    [ "$(wc -l < "$log")" -eq 4 ]; then
+    pass 'executable wake hooks run in filename order after resume'
+else
+    fail 'executable wake hooks run in filename order after resume'
+fi
+
+failure_hooks="$TEST_TMP/hooks-failure"
+mkdir "$failure_hooks"
+cat > "$failure_hooks/10-fail" <<'EOF'
+#!/bin/sh
+printf '%s\n' 'hook failed' >> "$AUTOWAKE_TEST_LOG"
+exit 1
+EOF
+cat > "$failure_hooks/20-after" <<'EOF'
+#!/bin/sh
+printf '%s\n' 'hook after failure' >> "$AUTOWAKE_TEST_LOG"
+EOF
+chmod +x "$failure_hooks/10-fail" "$failure_hooks/20-after"
+: > "$log"
+if output=$(TZ=UTC PATH="$MOCK_PATH" AUTOWAKE_CONFIG="$config" AUTOWAKE_NOW_EPOCH="$scheduled" \
+    AUTOWAKE_TEST_LOG="$log" AUTOWAKE_WAKE_HOOK_DIR="$failure_hooks" \
+    "$PROJECT_DIR/autowake.sh" run 2>&1); then
+    fail 'wake hook failures are reported after remaining hooks run'
+elif contains "$output" 'wake hook failed' &&
+    [ "$(sed -n '4p' "$log")" = 'hook after failure' ]; then
+    pass 'wake hook failures are reported after remaining hooks run'
+else
+    fail 'wake hook failures are reported after remaining hooks run'
+fi
+
 : > "$log"
 now=$(TZ=UTC date -d '2026-01-01 12:00:00' +%s)
 if TZ=UTC PATH="$MOCK_PATH" AUTOWAKE_CONFIG="$config" AUTOWAKE_NOW_EPOCH="$now" \
@@ -175,6 +225,7 @@ mkdir "$stage"
 if "$PROJECT_DIR/install.sh" --root "$stage" >/dev/null 2>&1 &&
     [ -x "$stage/usr/local/sbin/autowake" ] &&
     [ -x "$stage/usr/local/sbin/autowake-uninstall" ] &&
+    [ -d "$stage/etc/autowake/wake.d" ] &&
     [ -f "$stage/etc/systemd/system/autowake.timer" ] &&
     contains "$(cat "$stage/etc/systemd/system/autowake.timer")" 'OnCalendar=Fri *-*-* 19:00:00' &&
     [ ! -e "$stage/etc/systemd/system/timers.target.wants/autowake.timer" ]; then
@@ -211,6 +262,17 @@ if "$PROJECT_DIR/install.sh" --root "$stage" >/dev/null 2>&1 &&
     pass 'uninstall can preserve configuration'
 else
     fail 'uninstall can preserve configuration'
+fi
+
+if "$PROJECT_DIR/install.sh" --root "$stage" >/dev/null 2>&1; then
+    printf '%s\n' '#!/bin/sh' > "$stage/etc/autowake/wake.d/10-custom"
+    chmod +x "$stage/etc/autowake/wake.d/10-custom"
+fi
+if "$stage/usr/local/sbin/autowake-uninstall" --root "$stage" >/dev/null 2>&1 &&
+    [ -x "$stage/etc/autowake/wake.d/10-custom" ]; then
+    pass 'uninstall preserves custom wake hooks'
+else
+    fail 'uninstall preserves custom wake hooks'
 fi
 
 if [ "$FAIL" -ne 0 ]; then

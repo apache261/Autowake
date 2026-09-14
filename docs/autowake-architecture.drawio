@@ -1,0 +1,166 @@
+<mxfile host="app.diagrams.net">
+  <diagram id="autowake-architecture" name="AutoWake Architecture">
+    <mxGraphModel dx="3080" dy="1843" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="900" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" parent="1" style="text;html=1;align=center;verticalAlign=middle;fontSize=26;fontStyle=1;fontColor=#1F2937;" value="AutoWake Architecture" vertex="1">
+          <mxGeometry height="40" width="600" x="500" y="20" as="geometry" />
+        </mxCell>
+        <mxCell id="subtitle" parent="1" style="text;html=1;align=center;verticalAlign=middle;fontSize=14;fontColor=#6B7280;" value="Weekly suspend with RTC-backed automatic wake-up" vertex="1">
+          <mxGeometry height="30" width="600" x="500" y="60" as="geometry" />
+        </mxCell>
+        <mxCell id="setup-zone" parent="1" style="swimlane;html=1;rounded=1;startSize=34;horizontal=1;fontStyle=1;fontSize=15;fillColor=#EFF6FF;strokeColor=#2563EB;swimlaneFillColor=#FFFFFF;" value="Installation and configuration" vertex="1">
+          <mxGeometry height="300" width="490" x="40" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="runtime-zone" parent="1" style="swimlane;html=1;rounded=1;startSize=34;horizontal=1;fontStyle=1;fontSize=15;fillColor=#ECFDF5;strokeColor=#059669;swimlaneFillColor=#FFFFFF;" value="Scheduled runtime" vertex="1">
+          <mxGeometry height="560" width="1000" x="560" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="diagnostic-zone" parent="1" style="swimlane;html=1;rounded=1;startSize=34;horizontal=1;fontStyle=1;fontSize=15;fillColor=#FFF7ED;strokeColor=#EA580C;swimlaneFillColor=#FFFFFF;" value="Safe diagnostics" vertex="1">
+          <mxGeometry height="230" width="490" x="40" y="450" as="geometry" />
+        </mxCell>
+        <mxCell id="admin" parent="1" style="shape=mxgraph.basic.person;html=1;verticalLabelPosition=bottom;verticalAlign=top;align=center;fontStyle=1;fillColor=#DBEAFE;strokeColor=#2563EB;" value="Administrator" vertex="1">
+          <mxGeometry height="75" width="55" x="75" y="180" as="geometry" />
+        </mxCell>
+        <mxCell id="installer" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontStyle=1;fillColor=#DBEAFE;strokeColor=#2563EB;" value="install.sh" vertex="1">
+          <mxGeometry height="55" width="125" x="175" y="175" as="geometry" />
+        </mxCell>
+        <mxCell id="installed-files" parent="1" style="rounded=1;whiteSpace=wrap;html=1;align=left;spacingLeft=10;fillColor=#F8FAFC;strokeColor=#64748B;" value="Installed files&#xa;&#xa;/usr/local/sbin/autowake&#xa;/usr/local/sbin/autowake-uninstall&#xa;/etc/autowake.conf&#xa;/etc/autowake/wake.d&#xa;systemd service and timer" vertex="1">
+          <mxGeometry height="145" width="175" x="330" y="155" as="geometry" />
+        </mxCell>
+        <mxCell id="enable" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontStyle=1;fillColor=#DBEAFE;strokeColor=#2563EB;" value="systemctl enable --now&#xa;autowake.timer" vertex="1">
+          <mxGeometry height="58" width="160" x="175" y="325" as="geometry" />
+        </mxCell>
+        <mxCell id="uninstaller" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FEE2E2;strokeColor=#DC2626;" value="autowake-uninstall&#xa;disables timer and removes files" vertex="1">
+          <mxGeometry height="58" width="155" x="350" y="325" as="geometry" />
+        </mxCell>
+        <mxCell id="hVmgYYs2L3ZtaB3gAolU-1" edge="1" parent="1" source="timer" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="service" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="timer" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontStyle=1;fillColor=#D1FAE5;strokeColor=#059669;" value="autowake.timer&#xa;OnCalendar: Friday 19:00&#xa;Persistent=false" vertex="1">
+          <mxGeometry height="80" width="170" x="590" y="180" as="geometry" />
+        </mxCell>
+        <mxCell id="service" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontStyle=1;fillColor=#D1FAE5;strokeColor=#059669;" value="autowake.service&#xa;Type=oneshot · User=root" vertex="1">
+          <mxGeometry height="60" width="175" x="800" y="190" as="geometry" />
+        </mxCell>
+        <mxCell id="run" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontStyle=1;fillColor=#A7F3D0;strokeColor=#047857;strokeWidth=2;" value="autowake run" vertex="1">
+          <mxGeometry height="60" width="145" x="1015" y="190" as="geometry" />
+        </mxCell>
+        <mxCell id="config" parent="1" style="shape=document;whiteSpace=wrap;html=1;fillColor=#FEF3C7;strokeColor=#D97706;" value="Read and validate&#xa;/etc/autowake.conf" vertex="1">
+          <mxGeometry height="70" width="175" x="1000" y="305" as="geometry" />
+        </mxCell>
+        <mxCell id="window" parent="1" style="rhombus;whiteSpace=wrap;html=1;fontStyle=1;fillColor=#FEF3C7;strokeColor=#D97706;" value="Within 5 minutes&#xa;after scheduled time?" vertex="1">
+          <mxGeometry height="110" width="170" x="1225" y="285" as="geometry" />
+        </mxCell>
+        <mxCell id="skip" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FEE2E2;strokeColor=#DC2626;" value="Log and skip&#xa;No power action" vertex="1">
+          <mxGeometry height="70" width="110" x="1425" y="305" as="geometry" />
+        </mxCell>
+        <mxCell id="calculate" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D1FAE5;strokeColor=#059669;" value="Calculate next wake&#xa;Monday 06:00 local time" vertex="1">
+          <mxGeometry height="70" width="190" x="1215" y="435" as="geometry" />
+        </mxCell>
+        <mxCell id="rtcwake" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontStyle=1;fillColor=#CFFAFE;strokeColor=#0891B2;" value="rtcwake -m no -t …&#xa;Arm /dev/rtc0" vertex="1">
+          <mxGeometry height="70" width="175" x="1000" y="445" as="geometry" />
+        </mxCell>
+        <mxCell id="alarm-failure" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FEE2E2;strokeColor=#DC2626;" value="Alarm failure&#xa;Abort suspension" vertex="1">
+          <mxGeometry height="60" width="150" x="805" y="455" as="geometry" />
+        </mxCell>
+        <mxCell id="suspend" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontStyle=1;fillColor=#E0E7FF;strokeColor=#4F46E5;" value="systemctl suspend" vertex="1">
+          <mxGeometry height="60" width="175" x="1000" y="565" as="geometry" />
+        </mxCell>
+        <mxCell id="server" parent="1" style="shape=mxgraph.cisco.servers.standard_server;html=1;whiteSpace=wrap;verticalLabelPosition=bottom;verticalAlign=top;align=center;fillColor=#E0E7FF;strokeColor=#4F46E5;" value="Server suspended&#xa;Power remains connected" vertex="1">
+          <mxGeometry height="80" width="115" x="1245" y="545" as="geometry" />
+        </mxCell>
+        <mxCell id="rtc" parent="1" style="shape=mxgraph.basic.clock;html=1;whiteSpace=wrap;verticalLabelPosition=bottom;verticalAlign=top;align=center;fillColor=#CFFAFE;strokeColor=#0891B2;" value="Hardware RTC alarm&#xa;fires at wake time" vertex="1">
+          <mxGeometry height="80" width="80" x="1435" y="535" as="geometry" />
+        </mxCell>
+        <mxCell id="awake" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontStyle=1;fillColor=#D1FAE5;strokeColor=#059669;" value="Server resumes" vertex="1">
+          <mxGeometry height="60" width="130" x="1415" y="420" as="geometry" />
+        </mxCell>
+        <mxCell id="wake-hooks" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontStyle=1;fillColor=#FCE7F3;strokeColor=#DB2777;" value="Run executable wake hooks&#xa;/etc/autowake/wake.d" vertex="1">
+          <mxGeometry height="65" width="150" x="1395" y="190" as="geometry" />
+        </mxCell>
+        <mxCell id="diagnostic-user" parent="1" style="shape=mxgraph.basic.person;html=1;verticalLabelPosition=bottom;verticalAlign=top;align=center;fillColor=#FFEDD5;strokeColor=#EA580C;" value="Administrator" vertex="1">
+          <mxGeometry height="70" width="50" x="75" y="525" as="geometry" />
+        </mxCell>
+        <mxCell id="check-preview" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontStyle=1;fillColor=#FFEDD5;strokeColor=#EA580C;" value="autowake check&#xa;autowake preview" vertex="1">
+          <mxGeometry height="65" width="150" x="170" y="520" as="geometry" />
+        </mxCell>
+        <mxCell id="inspect" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF7ED;strokeColor=#EA580C;" value="Inspect configuration, dependencies,&#xa;suspend interface, and calculated times" vertex="1">
+          <mxGeometry height="85" width="155" x="350" y="510" as="geometry" />
+        </mxCell>
+        <mxCell id="safe-note" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontStyle=1;fontColor=#9A3412;fillColor=#FFEDD5;strokeColor=#EA580C;dashed=1;" value="No RTC alarm changes · No suspend request" vertex="1">
+          <mxGeometry height="40" width="335" x="170" y="620" as="geometry" />
+        </mxCell>
+        <mxCell id="journal" parent="1" style="shape=note;whiteSpace=wrap;html=1;fillColor=#F3F4F6;strokeColor=#6B7280;" value="systemd journal&#xa;intended wake time, skips, and errors" vertex="1">
+          <mxGeometry height="85" width="175" x="585" y="550" as="geometry" />
+        </mxCell>
+        <mxCell id="e-admin-installer" edge="1" parent="1" source="admin" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#2563EB;" target="installer">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-installer-files" edge="1" parent="1" source="installer" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#2563EB;" target="installed-files">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-admin-enable" edge="1" parent="1" source="admin" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#2563EB;" target="enable">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-enable-timer" edge="1" parent="1" source="enable" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#2563EB;fontColor=#1D4ED8;" target="timer" value="explicit activation">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-uninstall-files" edge="1" parent="1" source="uninstaller" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#DC2626;dashed=1;" target="installed-files">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-service-run" edge="1" parent="1" source="service" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#059669;" target="run">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-run-config" edge="1" parent="1" source="run" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#059669;" target="config">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-config-window" edge="1" parent="1" source="config" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#D97706;" target="window">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-window-skip" edge="1" parent="1" source="window" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#DC2626;fontStyle=1;" target="skip" value="No">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-window-calculate" edge="1" parent="1" source="window" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#059669;fontStyle=1;" target="calculate" value="Yes">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-calculate-rtcwake" edge="1" parent="1" source="calculate" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#059669;" target="rtcwake">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-rtcwake-failure" edge="1" parent="1" source="rtcwake" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#DC2626;dashed=1;" target="alarm-failure" value="failure">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-rtcwake-suspend" edge="1" parent="1" source="rtcwake" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#4F46E5;fontColor=#4338CA;" target="suspend" value="alarm armed successfully">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-suspend-server" edge="1" parent="1" source="suspend" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#4F46E5;" target="server">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-server-rtc" edge="1" parent="1" source="server" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#0891B2;" target="rtc" value="wait">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-rtc-awake" edge="1" parent="1" source="rtc" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#059669;" target="awake" value="hardware wake">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-awake-hooks" edge="1" parent="1" source="awake" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#DB2777;" target="wake-hooks" value="after resume">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-diag-user-command" edge="1" parent="1" source="diagnostic-user" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#EA580C;" target="check-preview">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-command-inspect" edge="1" parent="1" source="check-preview" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#EA580C;" target="inspect">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-skip-journal" edge="1" parent="1" source="skip" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#6B7280;dashed=1;" target="journal">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-failure-journal" edge="1" parent="1" source="alarm-failure" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#6B7280;dashed=1;" target="journal">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-hooks-journal" edge="1" parent="1" source="wake-hooks" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#6B7280;dashed=1;" target="journal" value="hook output">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

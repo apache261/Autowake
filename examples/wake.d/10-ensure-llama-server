@@ -1,0 +1,50 @@
+#!/bin/sh
+
+RUN_AS_USER=nisadmin
+LLAMA_SERVER=/home/nisadmin/llama.cpp/build/bin/llama-server
+MODEL=/home/nisadmin/llama.cpp/models/gemma-4-E4B-it-Q6_K.gguf
+
+if pgrep -u "$RUN_AS_USER" -x llama-server >/dev/null 2>&1; then
+    printf '%s\n' 'llama-server is running after wake'
+    exit 0
+fi
+
+if [ ! -x "$LLAMA_SERVER" ]; then
+    printf 'llama-server executable not found: %s\n' "$LLAMA_SERVER" >&2
+    exit 1
+fi
+if [ ! -r "$MODEL" ]; then
+    printf 'model not found or not readable: %s\n' "$MODEL" >&2
+    exit 1
+fi
+
+printf '%s\n' 'llama-server is not running; starting it'
+runuser -u "$RUN_AS_USER" -- env \
+    LLAMA_SERVER="$LLAMA_SERVER" \
+    MODEL="$MODEL" \
+    sh -c '
+    nohup "$LLAMA_SERVER" \
+        -m "$MODEL" \
+        --port 8080 \
+        --host 0.0.0.0 \
+        --ctx-size 112768 \
+        --n-gpu-layers -1 \
+        --seed 3407 \
+        --prio 2 \
+        --temp 1.0 \
+        --repeat-penalty 1.0 \
+        --min-p 0.00 \
+        --top-k 64 \
+        --top-p 0.95 \
+        --alias "gemma4" \
+        --cors-origins "*" \
+        > /dev/null 2>&1 &
+'
+
+sleep 2
+if ! pgrep -u "$RUN_AS_USER" -x llama-server >/dev/null 2>&1; then
+    printf '%s\n' 'llama-server did not remain running after launch' >&2
+    exit 1
+fi
+
+printf '%s\n' 'llama-server started successfully'

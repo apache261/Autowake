@@ -6,6 +6,7 @@ set -u
 
 PROGRAM=${0##*/}
 CONFIG_FILE=${AUTOWAKE_CONFIG:-/etc/autowake.conf}
+WAKE_HOOK_DIR=${AUTOWAKE_WAKE_HOOK_DIR:-/etc/autowake/wake.d}
 WINDOW_SECONDS=300
 
 error()
@@ -202,6 +203,22 @@ command_exists()
     command -v "$1" >/dev/null 2>&1
 }
 
+run_wake_hooks()
+{
+    hook_status=0
+    [ -d "$WAKE_HOOK_DIR" ] || return 0
+
+    for hook in "$WAKE_HOOK_DIR"/*; do
+        [ -f "$hook" ] && [ -x "$hook" ] || continue
+        printf 'Running wake hook: %s\n' "${hook##*/}"
+        if ! "$hook"; then
+            error "wake hook failed: $hook"
+            hook_status=1
+        fi
+    done
+    return "$hook_status"
+}
+
 do_preview()
 {
     load_config || return 1
@@ -280,6 +297,8 @@ do_run()
         error "systemctl suspend failed"
         return 1
     fi
+    printf '%s\n' 'System resumed; running wake hooks'
+    run_wake_hooks
 }
 
 usage()

@@ -31,8 +31,9 @@ SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 CONFIG_PATH="$ROOT/etc/autowake.conf"
 BIN_DIR="$ROOT/usr/local/sbin"
 UNIT_DIR="$ROOT/etc/systemd/system"
+WAKE_HOOK_DIR="$ROOT/etc/autowake/wake.d"
 
-install -d -m 0755 "$BIN_DIR" "$UNIT_DIR" "$(dirname "$CONFIG_PATH")"
+install -d -m 0755 "$BIN_DIR" "$UNIT_DIR" "$WAKE_HOOK_DIR" "$(dirname "$CONFIG_PATH")"
 install -m 0755 "$SCRIPT_DIR/autowake.sh" "$BIN_DIR/autowake"
 install -m 0755 "$SCRIPT_DIR/uninstall.sh" "$BIN_DIR/autowake-uninstall"
 if [ ! -e "$CONFIG_PATH" ]; then
@@ -68,7 +69,8 @@ trap - EXIT HUP INT TERM
 
 if [ -z "$ROOT" ]; then
     chown root:root "$BIN_DIR/autowake" "$BIN_DIR/autowake-uninstall" \
-        "$CONFIG_PATH" "$UNIT_DIR/autowake.service" "$UNIT_DIR/autowake.timer"
+        "$CONFIG_PATH" "$UNIT_DIR/autowake.service" "$UNIT_DIR/autowake.timer" \
+        "$ROOT/etc/autowake" "$WAKE_HOOK_DIR"
     systemctl daemon-reload
 fi
 
