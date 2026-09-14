@@ -1,0 +1,7 @@
+[Unit]
+Description=AutoWake RTC alarm and suspend
+
+[Service]
+Type=oneshot
+User=root
+ExecStart=@AUTOWAKE_BIN@ run
